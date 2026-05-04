@@ -39,10 +39,8 @@ const ExamRoom = () => {
   useEffect(() => {
     const fetchExam = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/tests/${attemptId}/questions`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        const data = await res.json();
+        const res = await API.get(`/tests/${attemptId}/questions`);
+        const data = res.data;
         setExam(data);
 
         // Calculate remaining time
@@ -109,19 +107,11 @@ const ExamRoom = () => {
     setShowViolationWarning(true);
 
     try {
-      const res = await fetch('http://localhost:5000/api/tests/violation', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          attempt_id: attemptId,
-          violation_type: type
-        })
+      const res = await API.post('/tests/violation', {
+        attempt_id: attemptId,
+        violation_type: type
       });
-
-      const data = await res.json();
+      const data = res.data;
       
       // Auto-submit if limit reached
       if (data.auto_submitted || newCount >= 3) {
@@ -201,23 +191,13 @@ const ExamRoom = () => {
     const currentQ = exam.questions[currentIdx];
 
     try {
-      const response = await fetch('http://localhost:5000/api/tests/submit-answer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          attempt_id: attemptId,
-          question_id: currentQ.question_id,
-          selected_option_id: currentQ.type === 'MCQ' ? currentQ.options.find(o => o.option_text === val)?.option_id : null,
-          descriptive_answer: currentQ.type === 'DESC' ? val : null
-        })
+      const response = await API.post('/tests/submit-answer', {
+        attempt_id: attemptId,
+        question_id: currentQ.question_id,
+        selected_option_id: currentQ.type === 'MCQ' ? currentQ.options.find(o => o.option_text === val)?.option_id : null,
+        descriptive_answer: currentQ.type === 'DESC' ? val : null
       });
-      
-      if (response.status === 409) {
-        return;
-      }
+      if (response.status === 409) return;
     } catch (error) {
       console.error('Error submitting answer:', error);
     }
@@ -226,14 +206,7 @@ const ExamRoom = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await fetch('http://localhost:5000/api/tests/end', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ attempt_id: attemptId })
-      });
+      await API.post('/tests/end', { attempt_id: attemptId });
       setIsFinished(true);
     } catch (error) {
       console.error('Error submitting exam:', error);

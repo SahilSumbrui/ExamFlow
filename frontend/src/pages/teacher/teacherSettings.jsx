@@ -24,6 +24,8 @@ import {
   EyeOff
 } from 'lucide-react';
 
+import API from '../../api/axios';
+
 const TeacherPreferences = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,10 +58,8 @@ const TeacherPreferences = () => {
 
   useEffect(() => {
     if (user?.user_id) {
-      fetch(`http://localhost:5000/api/auth/users/${user.user_id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })
-        .then(res => res.json())
+      API.get(`/auth/users/${user.user_id}`)
+        .then(res => res.data)
         .then(data => {
             setUserDetails(data);
             setProfileData({ name: data.name || '', email: data.email || '' });
@@ -71,16 +71,9 @@ const TeacherPreferences = () => {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`http://localhost:5000/api/auth/users/${user.user_id}`, {
-        method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}` 
-        },
-        body: JSON.stringify(profileData)
-      });
-      if (response.ok) {
-        const updated = await response.json();
+      const response = await API.put(`/auth/users/${user.user_id}`, profileData);
+      if (response.status === 200) {
+        const updated = response.data;
         setUserDetails(updated);
         // Update global auth context user state
         login(updated, localStorage.getItem('token'));
@@ -99,18 +92,10 @@ const TeacherPreferences = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/change-password", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ newPassword: passwordData.newPassword })
-      });
+      const response = await API.put('/auth/change-password', { newPassword: passwordData.newPassword });
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (response.ok) {
+      if (response.status === 200) {
         alert("Password changed successfully! Please log in again.");
         localStorage.removeItem("token");
         setIsPasswordModalOpen(false);

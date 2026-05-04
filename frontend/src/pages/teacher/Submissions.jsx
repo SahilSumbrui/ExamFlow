@@ -12,6 +12,8 @@ import {
   BarChart3
 } from 'lucide-react';
 
+import API from '../../api/axios';
+
 const SubmissionsContent = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
@@ -28,20 +30,14 @@ const SubmissionsContent = () => {
 
   const fetchSubmissions = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/exams/${examId}/results`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const submissions = await res.json();
-      
-      const examRes = await fetch(`http://localhost:5000/api/exams/${examId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const examData = await examRes.json();
-
-      const descriptiveRes = await fetch(`http://localhost:5000/api/tests/descriptive/${examId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const descriptiveAnswers = await descriptiveRes.json();
+      const [submissionsRes, examRes, descriptiveRes] = await Promise.all([
+        API.get(`/exams/${examId}/results`),
+        API.get(`/exams/${examId}`),
+        API.get(`/tests/descriptive/${examId}`)
+      ]);
+      const submissions = submissionsRes.data;
+      const examData = examRes.data;
+      const descriptiveAnswers = descriptiveRes.data;
       
       const uncheckedAttempts = new Set(
         descriptiveAnswers

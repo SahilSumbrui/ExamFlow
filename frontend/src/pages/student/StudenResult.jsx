@@ -20,6 +20,8 @@ import {
 
 
 
+import API from '../../api/axios';
+
 const StudentResultContent = () => {
   const { attemptId } = useParams();
   const navigate = useNavigate();
@@ -34,22 +36,19 @@ const StudentResultContent = () => {
 
   const fetchResult = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/attempts/${attemptId}/details`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const res = await API.get(`/attempts/${attemptId}/details`, { validateStatus: () => true });
       
-      if (!res.ok) {
-        const error = await res.json();
-        if (res.status === 403 && error.message === 'Results not published yet') {
-          setResult({ notPublished: true });
-        } else {
-          setResult(null);
-        }
+      if (res.status === 403 && res.data.message === 'Results not published yet') {
+        setResult({ notPublished: true });
         setLoading(false);
         return;
       }
-      
-      const data = await res.json();
+      if (res.status !== 200) {
+        setResult(null);
+        setLoading(false);
+        return;
+      }
+      const data = res.data;
       
       if (!data || data.length === 0) {
         setResult(null);

@@ -9,6 +9,8 @@ import {
   Eye, EyeOff, Loader2, AlertCircle
 } from 'lucide-react';
 
+import API from '../api/axios';
+
 const LoginContent = () => {
   const [authMode, setAuthMode] = useState('login');
   const [showPassword, setShowPassword] = useState(false);
@@ -121,12 +123,7 @@ const LoginContent = () => {
     if (!googleRole) return;
     setGoogleLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/google', {
-        name: googlePending.name,
-        email: googlePending.email,
-        googleId: googlePending.googleId,
-        role: googleRole
-      });
+      const res = await API.post('/auth/google', { name: googlePending.name, email: googlePending.email, googleId: googlePending.googleId, role: googleRole });
       login(res.data.user, res.data.token);
       redirectByRole(res.data.user.role);
     } catch (err) {
@@ -148,9 +145,7 @@ const LoginContent = () => {
         });
         const { name, email, sub } = userInfo.data;
 
-        const res = await axios.post('http://localhost:5000/api/auth/google', {
-          name, email, googleId: sub
-        });
+      const res = await API.post('/auth/google', { name, email, googleId: sub });
 
         if (res.data.newUser) {
           setGooglePending({ name, email, googleId: sub });

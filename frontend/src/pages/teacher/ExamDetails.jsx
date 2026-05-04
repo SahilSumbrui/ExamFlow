@@ -45,6 +45,8 @@ const getMockExam = (id) => ({
   submissionsCount: 124
 });
 
+import API from '../../api/axios';
+
 const ExamDetailsContent = () => {
   const { examId } = useParams();
   const navigate = useNavigate();
@@ -62,17 +64,9 @@ const ExamDetailsContent = () => {
     const timer = setTimeout(() => {
       const fetchedExam = async () => {
         try{
-          const res = await fetch(`http://localhost:5000/api/exams/${examId}`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setExam(data);
-          } else {
-            throw new Error("Failed to fetch exam");
-          }
+          const res = await API.get(`/exams/${examId}`);
+          const data = res.data;
+          setExam(data);
         } catch (error) {
           console.error("Error fetching exam:", error);
         } finally {
@@ -92,14 +86,7 @@ const ExamDetailsContent = () => {
   const toggleStatus = async () => {
     const newStatus = exam.status === 'DRAFT' ? 'PUBLISHED' : 'DRAFT';
     try {
-      await fetch(`http://localhost:5000/api/exams/${examId}/status`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
+      await API.put(`/exams/${examId}/status`, { status: newStatus });
       setExam(prev => ({ ...prev, status: newStatus }));
     } catch (error) {
       console.error('Error updating status:', error);
@@ -116,19 +103,7 @@ const ExamDetailsContent = () => {
         duration_minutes: parseInt(editForm.duration_minutes)
       };
       
-      const res = await fetch(`http://localhost:5000/api/exams/${examId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to update exam');
-      }
+      await API.put(`/exams/${examId}`, payload);
       
       setExam(prev => ({ ...prev, ...payload }));
       setShowEditModal(false);
@@ -145,14 +120,7 @@ const ExamDetailsContent = () => {
     
     setIsPublishingResults(true);
     try {
-      await fetch('http://localhost:5000/api/exams/publish-results', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ exam_id: examId, publish: !exam.results_published })
-      });
+      await API.post('/exams/publish-results', { exam_id: examId, publish: !exam.results_published });
       setExam(prev => ({ ...prev, results_published: !prev.results_published }));
       alert(`Results ${action}ed successfully!`);
     } catch (error) {

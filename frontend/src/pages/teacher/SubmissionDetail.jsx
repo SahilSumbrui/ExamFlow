@@ -21,6 +21,8 @@ import {
   MessageSquare
 } from 'lucide-react';
 
+import API from '../../api/axios';
+
 const SubmissionDetailContent = () => {
   const { attemptId } = useParams();
   const navigate = useNavigate();
@@ -40,10 +42,8 @@ const SubmissionDetailContent = () => {
 
   const fetchSubmissionDetail = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/attempts/${attemptId}/details`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const details = await res.json();
+      const res = await API.get(`/attempts/${attemptId}/details`);
+      const details = res.data;
       
       if (details.length === 0) {
         setData(null);
@@ -106,27 +106,13 @@ const SubmissionDetailContent = () => {
       const descriptiveQuestions = data.responses.filter(r => r.type === 'DESC');
       
       for (const question of descriptiveQuestions) {
-        await fetch(`http://localhost:5000/api/tests/evaluate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify({
+        await API.post('/tests/evaluate', {
             answer_id: question.answer_id,
             marks_awarded: manualGrades[question.id]
-          })
-        });
+          });
       }
 
-      await fetch(`http://localhost:5000/api/tests/calculate-score`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ attempt_id: attemptId })
-      });
+      await API.post('/tests/calculate-score', { attempt_id: attemptId });
 
       alert('Grades saved successfully!');
       fetchSubmissionDetail(); // Reload data

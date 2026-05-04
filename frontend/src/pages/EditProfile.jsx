@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../api/axios';
 
 const EditProfile = () => {
   const [formData, setFormData] = useState({ name: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -29,7 +29,7 @@ const EditProfile = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const { data } = await axios.put('http://localhost:5000/api/auth/profile', {
+      const { data } = await API.put('/auth/profile', {
         name: formData.name,
         email: formData.email,
         currentPassword: formData.currentPassword,

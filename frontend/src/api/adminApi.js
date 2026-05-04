@@ -1,16 +1,13 @@
-import axios from "axios";
+import API from './axios';
 
-const API_URL = "https://examflow-2zqu.onrender.com/api/admin";
-
-const authHeader = () => ({
-  headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-});
-
-export const getAllUsers = () => axios.get(`${API_URL}/users`, authHeader());
-export const deleteUser = (user_id) => axios.delete(`${API_URL}/users/${user_id}`, authHeader());
-export const getAllExamsWithDetails = () => axios.get(`${API_URL}/exams`, authHeader());
-export const deleteExam = (exam_id) => axios.delete(`${API_URL}/exams/${exam_id}`, authHeader());
-export const getAllAttempts = () => axios.get(`${API_URL}/attempts`, authHeader());
-export const getSystemStats = () => axios.get(`${API_URL}/stats`, authHeader());
-export const getAttemptsOverTime = () => axios.get(`${API_URL}/chart/attempts-over-time`, authHeader());
-export const getScoreDistribution = () => axios.get(`${API_URL}/chart/score-distribution`, authHeader());
+export const getAllUsers = () => API.get('/admin/users');
+export const deleteUser = (user_id) => API.delete(`/admin/users/${user_id}`);
+export const getAllExamsWithDetails = () => API.get('/admin/exams');
+export const deleteExam = (exam_id) => API.delete(`/admin/exams/${exam_id}`);
+export const getAllAttempts = () => API.get('/admin/attempts');
+export const getSystemStats = () => API.get('/admin/stats');
+export const getAttemptsOverTime = () => API.get('/admin/chart/attempts-over-time');
+export const getScoreDistribution = () => API.get('/admin/chart/score-distribution');
+export const getPendingTeachers = () => API.get('/admin/pending-teachers');
+export const approveTeacher = (user_id) => API.post('/admin/approve-teacher', { user_id });
+export const rejectTeacher = (user_id) => API.post('/admin/reject-teacher', { user_id });

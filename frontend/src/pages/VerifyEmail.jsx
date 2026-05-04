@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
+import API from '../api/axios';
 
 const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
@@ -12,11 +12,8 @@ const VerifyEmail = () => {
       return;
     }
 
-    axios
-      .get(`http://localhost:5000/api/auth/verify/${token}`)
-      .then((res) => {
-        alert("Email Verified ✅");
-      })
+    API.get(`/auth/verify/${token}`)
+      .then(() => alert("Email Verified ✅"))
       .catch((err) => {
         console.error(err);
         alert("Invalid or expired link ❌");

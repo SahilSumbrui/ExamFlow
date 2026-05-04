@@ -34,6 +34,8 @@ const getMockResults = () => [
   { id: 'att-104', examTitle: 'Introduction to AI', courseId: 'CS-101', score: 18, total: 30, date: 'Nov 05, 2025', status: 'Passed' },
 ];
 
+import API from '../../api/axios';
+
 const MyResultsContent = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,10 +53,8 @@ const MyResultsContent = () => {
 
   const fetchResults = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/students/${user.user_id}/attempts`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const data = await res.json();
+      const res = await API.get(`/students/${user.user_id}/attempts`);
+      const data = res.data;
       setResults(data);
 
       // Calculate average score as percentage (only for published results)

@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Search, Crown, Medal, Award, TrendingUp } from 'lucide-react';
 import { useTheme } from '../../App';
 
+import API from '../../api/axios';
+
 const Leaderboard = () => {
   const navigate = useNavigate();
   const { examId } = useParams();
@@ -15,10 +17,8 @@ const Leaderboard = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/leaderboard/${examId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-        });
-        const data = await res.json();
+        const res = await API.get(`/leaderboard/${examId}`);
+        const data = res.data;
         setLeaderboard(data);
         
         // Get exam total marks from first result

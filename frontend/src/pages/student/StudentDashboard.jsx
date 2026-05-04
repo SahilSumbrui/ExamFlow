@@ -50,6 +50,8 @@ const XIcon = ({ className, size }) => (
   </svg>
 );
 
+import API from '../../api/axios';
+
 const StudentDashContent = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -72,10 +74,8 @@ const StudentDashContent = () => {
 
   const fetchAttempts = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/students/${user.user_id}/attempts`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const data = await res.json();
+      const res = await API.get(`/students/${user.user_id}/attempts`);
+      const data = res.data;
       setAttempts(data);
 
       const active = data.filter(a => a.status === 'ONGOING').length;
@@ -97,17 +97,10 @@ const StudentDashContent = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/tests/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(joinForm)
-      });
-      const data = await res.json();
+      const res = await API.post('/tests/start', joinForm);
+      const data = res.data;
       
-      if (res.ok) {
+      if (res.status === 200 || res.status === 201) {
         setShowJoinModal(false);
         navigate(`/student/exam/${data.attempt_id}`);
       } else {

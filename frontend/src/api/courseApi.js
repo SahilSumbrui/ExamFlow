@@ -1,28 +1,8 @@
-import axios from "axios";
+import API from './axios';
 
-const API_URL = "https://examflow-2zqu.onrender.com/api/courses";
-
-// Get teacher's courses
-export const getTeacherCourses = async () => {
-  const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user"));
-  return axios.get(`${API_URL}/teacher/${user.user_id}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
+export const getTeacherCourses = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  return API.get(`/courses/teacher/${user.user_id}`);
 };
-
-// Create course
-export const createCourse = async (courseData) => {
-  const token = localStorage.getItem("token");
-  return axios.post(`${API_URL}/create`, courseData, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-};
-
-// Delete course
-export const deleteCourse = async (course_id) => {
-  const token = localStorage.getItem("token");
-  return axios.delete(`${API_URL}/${course_id}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-};
+export const createCourse = (courseData) => API.post('/courses/create', courseData);
+export const deleteCourse = (course_id) => API.delete(`/courses/${course_id}`);

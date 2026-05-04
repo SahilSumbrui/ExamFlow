@@ -11,6 +11,8 @@ import {
   FileText 
 } from 'lucide-react';
 
+import API from '../../api/axios';
+
 const QuestionBuilder = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,10 +41,8 @@ const QuestionBuilder = () => {
 
   const fetchQuestion = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/questions/${question_id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      const question = await res.json();
+      const res = await API.get(`/questions/${question_id}`);
+      const question = res.data;
       
       setQType(question.type);
       setQText(question.question_text);
@@ -74,26 +74,12 @@ const QuestionBuilder = () => {
 
     try {
       if (isEditMode) {
-        await fetch(`http://localhost:5000/api/questions/${question_id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(payload)
-        });
+        await API.put(`/questions/${question_id}`, payload);
         alert('Question updated successfully!');
         navigate(`/teacher/exam/${examId}`);
       } else {
-        const res = await fetch('http://localhost:5000/api/questions/create-Question', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`
-          },
-          body: JSON.stringify(payload)
-        });
-        if (res.ok) {
+        const res = await API.post('/questions/create-Question', payload);
+        if (res.status === 200 || res.status === 201) {
           alert('Question added successfully!');
           setQText('');
           setOptions([{ option_text: '', is_correct: true }, { option_text: '', is_correct: false }]);
