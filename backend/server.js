@@ -5,7 +5,7 @@ require("dotenv").config();
 const app = express();
 const db = require("./config/db");
 
-app.use(cors());
+app.use(cors({ origin: "*" }));
 app.use(express.json());
 
 const examRoutes = require("./routes/examRoutes");
@@ -36,6 +36,3 @@ app.get("/test-db", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-const cors = require("cors");
-app.use(cors({origin: "*"}));
