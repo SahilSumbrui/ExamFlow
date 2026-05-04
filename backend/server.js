@@ -24,6 +24,15 @@ app.use("/api/courses", require("./routes/courseRoutes"));
 
 // Server
 const PORT = process.env.PORT || 5000;
+app.get("/test-db", (req, res) => {
+  db.query("SELECT * FROM users LIMIT 5", (err, results) => {
+    if (err) {
+      console.error("Database query failed:", err);
+      res.status(500).json({ error: "Database query failed" });
+    }
+    res.json(results);
+  });
+});
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

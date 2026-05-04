@@ -32,7 +32,7 @@ const AdminSettings = () => {
 
   // Form States
   const [profileData, setProfileData] = useState({ name: '', email: '' });
-  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '' });
   const [userDetails, setUserDetails] = useState(user);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -96,10 +96,7 @@ const AdminSettings = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`
         },
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword
-        })
+        body: JSON.stringify({ newPassword: passwordData.newPassword })
       });
 
       const data = await response.json();
@@ -108,7 +105,7 @@ const AdminSettings = () => {
         alert("Password changed successfully! Please log in again.");
         localStorage.removeItem("token");
         setIsPasswordModalOpen(false);
-        setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        setPasswordData({ newPassword: "", confirmPassword: "" });
         // Proper logout flow
         logout();
         navigate('/');
@@ -279,26 +276,10 @@ const AdminSettings = () => {
           <div className={`w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl transition-all ${theme === 'dark' ? 'bg-[#161b2b] border border-slate-800 text-white' : 'bg-white text-slate-900'}`}>
             <div className="flex justify-between items-center mb-8">
               <h3 className="text-xl font-black">Change Password</h3>
-              <button onClick={() => { setIsPasswordModalOpen(false); setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' }); setShowCurrentPassword(false); setShowNewPassword(false); }} className="p-2 text-slate-400 hover:text-red-500"><X size={24}/></button>
+              <button onClick={() => { setIsPasswordModalOpen(false); setPasswordData({ newPassword: '', confirmPassword: '' }); setShowNewPassword(false); }} className="p-2 text-slate-400 hover:text-red-500"><X size={24}/></button>
             </div>
             <form onSubmit={handleChangePassword} autoComplete="off" className="space-y-5">
               <input type="password" style={{display:'none'}} autoComplete="new-password" readOnly />
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Current Password</label>
-                <div className="relative">
-                  <input 
-                    type={showCurrentPassword ? "text" : "password"} 
-                    value={passwordData.currentPassword} 
-                    onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})} 
-                    autoComplete="current-password"
-                    className={`w-full px-5 py-3 rounded-xl border outline-none font-bold pr-12 ${theme === 'dark' ? 'bg-[#0b0f1a] border-slate-700 focus:border-rose-500' : 'bg-slate-50 border-slate-200'}`} 
-                    required 
-                  />
-                  <button type="button" onClick={() => setShowCurrentPassword(!showCurrentPassword)} className={`absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded ${theme === 'dark' ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-700'}`}>
-                    {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
               <div>
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">New Password</label>
                 <div className="relative">

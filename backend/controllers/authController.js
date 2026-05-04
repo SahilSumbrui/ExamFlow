@@ -58,6 +58,10 @@ exports.login = (req, res) => {
 exports.signup = (req, res) => {
   const { name, email, password, role } = req.body;
 
+  if (!role) {
+    return res.status(400).json({ message: "Please select a role (Student or Teacher)" });
+  }
+
   db.query(
     "SELECT * FROM users WHERE email = ?",
     [email],
@@ -174,10 +178,10 @@ exports.updateProfile = (req, res) => {
 
 exports.changePassword = async (req, res) => {
   const { user_id } = req.user;
-  const { currentPassword, newPassword } = req.body;
+  const { newPassword } = req.body;
 
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json({ message: "Both passwords are required" });
+  if (!newPassword) {
+    return res.status(400).json({ message: "New password is required" });
   }
 
   db.query("SELECT * FROM users WHERE user_id = ?", [user_id], async (err, results) => {
@@ -185,13 +189,6 @@ exports.changePassword = async (req, res) => {
     if (results.length === 0) return res.status(404).json({ message: "User not found" });
 
     const user = results[0];
-
-    const match = await bcrypt.compare(currentPassword, user.password);
-
-    if (!match) {
-      return res.status(401).json({ message: "Current password is incorrect" });
-    }
-
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     db.query(
@@ -199,10 +196,7 @@ exports.changePassword = async (req, res) => {
       [hashedPassword, user_id],
       (err) => {
         if (err) return res.status(500).json({ message: "DB error" });
-
-        // Send password changed email (non-blocking)
         sendPasswordChangedEmail(user.name, user.email).catch(err => console.error('Password email failed:', err));
-
         res.json({ message: "Password updated successfully" });
       }
     );
