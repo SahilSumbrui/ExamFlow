@@ -101,7 +101,7 @@ exports.signup = (req, res) => {
               return res.status(500).json({ message: "DB error", error: err.message });
             }
 
-            const verifyLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+            const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
 
             sendMail(
               email,
