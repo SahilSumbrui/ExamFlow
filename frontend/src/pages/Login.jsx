@@ -4,12 +4,11 @@ import { useAuth } from "../context/AuthContext";
 import { loginUser, signupUser } from "../api/authApi";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import API from '../api/axios';
 import {
   LogIn, UserPlus, Mail, Lock, User,
   Eye, EyeOff, Loader2, AlertCircle
 } from 'lucide-react';
-
-import API from '../api/axios';
 
 const LoginContent = () => {
   const [authMode, setAuthMode] = useState('login');
@@ -103,7 +102,7 @@ const LoginContent = () => {
     setError('');
     setGoogleLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/google', {
+      const res = await API.post('/auth/google', {
         credential: credentialResponse.credential
       });
       if (res.data.newUser) {
