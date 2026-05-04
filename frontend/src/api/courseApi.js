@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/courses";
+const API_URL = "https://examflow-2zqu.onrender.com/api/courses";
 
 // Get teacher's courses
 export const getTeacherCourses = async () => {
