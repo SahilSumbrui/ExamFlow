@@ -150,28 +150,18 @@ exports.getUserProfile = (req, res) => {
 
 exports.updateProfile = (req, res) => {
   const { user_id } = req.user;
-  const { name, email } = req.body;
+  const { name } = req.body;
 
-  if (!name || !email) {
-    return res.status(400).json({ message: "Name and email are required" });
+  if (!name) {
+    return res.status(400).json({ message: "Name is required" });
   }
 
   db.query(
-    "UPDATE users SET name = ?, email = ? WHERE user_id = ?",
-    [name, email, user_id],
+    "UPDATE users SET name = ? WHERE user_id = ?",
+    [name, user_id],
     (err) => {
-      if (err) {
-        return res.status(500).json({ message: "Database error" });
-      }
-
-      res.json({
-        message: "Profile updated successfully",
-        user: {
-          user_id,
-          name,
-          email
-        }
-      });
+      if (err) return res.status(500).json({ message: "Database error" });
+      res.json({ message: "Profile updated successfully", user: { user_id, name } });
     }
   );
 };

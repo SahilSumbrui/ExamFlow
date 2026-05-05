@@ -42,7 +42,7 @@ const Preferences = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // Form States
-  const [profileData, setProfileData] = useState({ name: '', email: '' });
+  const [profileData, setProfileData] = useState({ name: '' });
   const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '' });
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -61,7 +61,7 @@ const Preferences = () => {
         .then(res => res.data)
         .then(data => {
             setUserDetails(data);
-            setProfileData({ name: data.name || '', email: data.email || '' });
+            setProfileData({ name: data.name || '' });
         })
         .catch(err => console.error('Error fetching user:', err));
     }
@@ -286,10 +286,6 @@ const Preferences = () => {
               <div>
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Full Name</label>
                 <input type="text" value={profileData.name} onChange={(e) => setProfileData({...profileData, name: e.target.value})} className={`w-full px-5 py-3 rounded-xl border outline-none font-bold ${theme === 'dark' ? 'bg-[#0b0f1a] border-slate-700 focus:border-indigo-500' : 'bg-slate-50 border-slate-200'}`} required />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Email Address</label>
-                <input type="email" value={profileData.email} onChange={(e) => setProfileData({...profileData, email: e.target.value})} className={`w-full px-5 py-3 rounded-xl border outline-none font-bold ${theme === 'dark' ? 'bg-[#0b0f1a] border-slate-700 focus:border-indigo-500' : 'bg-slate-50 border-slate-200'}`} required />
               </div>
               <button type="submit" className="w-full py-4 rounded-2xl font-bold text-xs uppercase tracking-widest bg-indigo-600 text-white hover:bg-indigo-500 transition-all">Save Profile</button>
             </form>
