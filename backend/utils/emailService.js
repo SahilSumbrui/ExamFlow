@@ -1,21 +1,13 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require('resend');
 
-const createTransporter = () => nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
-const sendMail = (to, subject, html) => {
-  const transporter = createTransporter();
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.error('Email credentials missing: EMAIL_USER or EMAIL_PASS not set');
+const sendMail = async (to, subject, html) => {
+  if (!process.env.RESEND_API_KEY) {
+    console.error('RESEND_API_KEY not set');
     return Promise.reject(new Error('Email credentials not configured'));
   }
-  return transporter.sendMail({
-    from: `"ExamFlow" <${process.env.EMAIL_USER}>`,
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  return resend.emails.send({
+    from: 'ExamFlow <onboarding@resend.dev>',
     to,
     subject,
     html
