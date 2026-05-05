@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
+const createTransporter = () => nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
@@ -9,6 +9,11 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendMail = (to, subject, html) => {
+  const transporter = createTransporter();
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.error('Email credentials missing: EMAIL_USER or EMAIL_PASS not set');
+    return Promise.reject(new Error('Email credentials not configured'));
+  }
   return transporter.sendMail({
     from: `"ExamFlow" <${process.env.EMAIL_USER}>`,
     to,
