@@ -6,12 +6,18 @@ const sendMail = async (to, subject, html) => {
     return Promise.reject(new Error('Email credentials not configured'));
   }
   const resend = new Resend(process.env.RESEND_API_KEY);
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: 'ExamFlow <onboarding@resend.dev>',
     to,
     subject,
     html
   });
+  if (result.error) {
+    console.error('Resend error:', JSON.stringify(result.error));
+    throw new Error(result.error.message);
+  }
+  console.log('Email sent successfully to:', to, '| ID:', result.data?.id);
+  return result;
 };
 
 const sendWelcomeEmail = (name, email, role) => {
