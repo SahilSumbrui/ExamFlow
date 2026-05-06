@@ -6,23 +6,24 @@ const sendMail = async (to, subject, html) => {
     return Promise.reject(new Error('Email credentials not configured'));
   }
 
-  const client = Brevo.ApiClient.instance;
-  client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+  try {
+    const client = new Brevo.ApiClient();
+    client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+    Brevo.ApiClient.instance = client;
 
-  const api = new Brevo.TransactionalEmailsApi();
-  const email = new Brevo.SendSmtpEmail();
+    const api = new Brevo.TransactionalEmailsApi();
+    const email = new Brevo.SendSmtpEmail();
 
   email.sender = { name: 'ExamFlow', email: process.env.SENDER_EMAIL || 'noreply@examflow.com' };
   email.to = [{ email: to }];
   email.subject = subject;
   email.htmlContent = html;
 
-  try {
     const result = await api.sendTransacEmail(email);
     console.log('Email sent successfully to:', to, '| MessageId:', result.messageId);
     return result;
   } catch (err) {
-    console.error('Brevo error:', err?.response?.body || err.message);
+    console.error('Brevo error:', err?.response?.body || err.message || err);
     throw err;
   }
 };
