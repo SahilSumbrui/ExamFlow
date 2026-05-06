@@ -77,22 +77,18 @@ exports.signup = (req, res) => {
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
         const status = "ACTIVE";
-        const verificationToken = crypto.randomBytes(32).toString("hex");
-        const verificationTokenExpiry = Date.now() + 15 * 60 * 1000;
 
         db.query(
           `INSERT INTO users 
-          (name, email, password, role, status, is_verified, verification_token, verification_token_expiry) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          (name, email, password, role, status, is_verified) 
+          VALUES (?, ?, ?, ?, ?, ?)`,
           [
             name,
             email,
             hashedPassword,
             role,
             status,
-            0,
-            verificationToken,
-            verificationTokenExpiry
+            1
           ],
           (err, result) => {
             if (err) {
@@ -100,27 +96,8 @@ exports.signup = (req, res) => {
               return res.status(500).json({ message: "DB error", error: err.message });
             }
 
-            const verifyLink = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify-email?token=${verificationToken}`;
-
-            sendMail(
-              email,
-              "Verify your email - ExamFlow",
-              `
-              <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:20px;">
-                <h2>Verify your Email</h2>
-                <p>Hi ${name},</p>
-                <p>Click the button below to verify your account:</p>
-                <a href="${verifyLink}" style="display:inline-block;padding:10px 20px;background:#6366f1;color:white;text-decoration:none;border-radius:6px;">
-                  Verify Email
-                </a>
-                <p style="margin-top:20px;">This link will expire in 15 minutes.</p>
-                <p style="font-size:12px;color:gray;">This is an automated email. Do not respond.</p>
-              </div>
-              `
-            ).catch(err => console.log("Email error:", err));
-
             return res.status(201).json({
-              message: "Account created successfully. Please check your email to verify your account."
+              message: "Account created successfully. You can now log in."
             });
           }
         );
