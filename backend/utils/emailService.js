@@ -7,9 +7,9 @@ const sendMail = async (to, subject, html) => {
   }
 
   try {
-    const client = new Brevo.ApiClient();
-    client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
-    Brevo.ApiClient.instance = client;
+    const defaultClient = Brevo.ApiClient.instance;
+    const apiKey = defaultClient.authentications['api-key'];
+    apiKey.apiKey = process.env.BREVO_API_KEY;
 
     const api = new Brevo.TransactionalEmailsApi();
     const email = new Brevo.SendSmtpEmail();
