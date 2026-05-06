@@ -1,4 +1,4 @@
-const { TransactionalEmailsApi, SendSmtpEmail } = require('@getbrevo/brevo');
+const { Brevo } = require('@getbrevo/brevo');
 
 const sendMail = async (to, subject, html) => {
   if (!process.env.BREVO_API_KEY) {
@@ -7,16 +7,17 @@ const sendMail = async (to, subject, html) => {
   }
 
   try {
-    const api = new TransactionalEmailsApi();
-    api.setApiKey(0, process.env.BREVO_API_KEY);
+    const client = new Brevo({
+      apiKey: process.env.BREVO_API_KEY
+    });
 
-    const email = new SendSmtpEmail();
-    email.sender = { name: 'ExamFlow', email: process.env.SENDER_EMAIL || 'noreply@examflow.com' };
-    email.to = [{ email: to }];
-    email.subject = subject;
-    email.htmlContent = html;
+    const result = await client.transactionalEmails.sendTransacEmail({
+      sender: { name: 'ExamFlow', email: process.env.SENDER_EMAIL || 'noreply@examflow.com' },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: html
+    });
 
-    const result = await api.sendTransacEmail(email);
     console.log('Email sent successfully to:', to, '| MessageId:', result.messageId);
     return result;
   } catch (err) {
