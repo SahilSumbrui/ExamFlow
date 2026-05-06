@@ -1,23 +1,30 @@
-const { Resend } = require('resend');
+const Brevo = require('@getbrevo/brevo');
 
 const sendMail = async (to, subject, html) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.error('RESEND_API_KEY not set');
+  if (!process.env.BREVO_API_KEY) {
+    console.error('BREVO_API_KEY not set');
     return Promise.reject(new Error('Email credentials not configured'));
   }
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  const result = await resend.emails.send({
-    from: 'ExamFlow <onboarding@resend.dev>',
-    to,
-    subject,
-    html
-  });
-  if (result.error) {
-    console.error('Resend error:', JSON.stringify(result.error));
-    throw new Error(result.error.message);
+
+  const client = Brevo.ApiClient.instance;
+  client.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+
+  const api = new Brevo.TransactionalEmailsApi();
+  const email = new Brevo.SendSmtpEmail();
+
+  email.sender = { name: 'ExamFlow', email: 'examflow.notifications@gmail.com' };
+  email.to = [{ email: to }];
+  email.subject = subject;
+  email.htmlContent = html;
+
+  try {
+    const result = await api.sendTransacEmail(email);
+    console.log('Email sent successfully to:', to, '| MessageId:', result.messageId);
+    return result;
+  } catch (err) {
+    console.error('Brevo error:', err?.response?.body || err.message);
+    throw err;
   }
-  console.log('Email sent successfully to:', to, '| ID:', result.data?.id);
-  return result;
 };
 
 const sendWelcomeEmail = (name, email, role) => {
