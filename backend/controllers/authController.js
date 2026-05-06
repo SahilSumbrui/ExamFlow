@@ -185,7 +185,11 @@ exports.changePassword = async (req, res) => {
       [hashedPassword, user_id],
       (err) => {
         if (err) return res.status(500).json({ message: "DB error" });
-        sendPasswordChangedEmail(user.name, user.email).catch(err => console.error('Password email failed:', err));
+        sendPasswordChangedEmail(user.name, user.email)
+          .then(() => console.log('Password change email sent successfully'))
+          .catch(err => {
+            console.error('Password email failed:', err?.response?.body || err.message);
+          });
         res.json({ message: "Password updated successfully" });
       }
     );

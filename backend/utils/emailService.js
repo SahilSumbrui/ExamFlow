@@ -12,7 +12,7 @@ const sendMail = async (to, subject, html) => {
   const api = new Brevo.TransactionalEmailsApi();
   const email = new Brevo.SendSmtpEmail();
 
-  email.sender = { name: 'ExamFlow', email: 'examflow.notifications@gmail.com' };
+  email.sender = { name: 'ExamFlow', email: process.env.SENDER_EMAIL || 'noreply@examflow.com' };
   email.to = [{ email: to }];
   email.subject = subject;
   email.htmlContent = html;
