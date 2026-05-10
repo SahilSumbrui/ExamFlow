@@ -26,6 +26,13 @@ exports.login = (req, res) => {
         });
       }
 
+      // Check if user has password (Google users might not)
+      if (!user.password) {
+        return res.status(403).json({ 
+          message: "This account was created with Google Sign-In. Please use 'Continue with Google' to log in. You can set a password in Security & Access settings."
+        });
+      }
+
       //Block login if email not verified
       if (!user.is_verified) {
         return res.status(403).json({ message: "Please verify your email before logging in." });

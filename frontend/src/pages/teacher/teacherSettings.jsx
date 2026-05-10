@@ -189,17 +189,22 @@ const TeacherPreferences = () => {
                 <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
                    <Lock size={14} className="text-indigo-500" /> Security & Access
                 </h4>
-                <div className="flex items-center justify-between">
-                   <div>
-                      <p className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>Account Password</p>
-                      <p className="text-xs text-slate-500">Regularly update your password to keep your account secure.</p>
+                <div className="space-y-4">
+                   <div className="flex items-center justify-between">
+                      <div>
+                         <p className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>Account Password</p>
+                         <p className="text-xs text-slate-500">Regularly update your password to keep your account secure.</p>
+                      </div>
+                      <button 
+                        onClick={() => setIsPasswordModalOpen(true)}
+                        className={`px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${theme === 'dark' ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-900'}`}
+                      >
+                        Change Password
+                      </button>
                    </div>
-                   <button 
-                     onClick={() => setIsPasswordModalOpen(true)}
-                     className={`px-6 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${theme === 'dark' ? 'bg-slate-800 hover:bg-slate-700 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-900'}`}
-                   >
-                     Change Password
-                   </button>
+                   <div className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-blue-500/10 border-blue-500/30 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-700'}`}>
+                      <p className="text-xs font-bold">💡 Tip: If you signed up with Google, you can set a password here to enable traditional email/password login.</p>
+                   </div>
                 </div>
              </div>
 
