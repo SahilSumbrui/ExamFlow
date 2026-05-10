@@ -1,30 +1,31 @@
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+const axios = require('axios');
 
 const sendMail = async (to, subject, html) => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.error('EMAIL_USER or EMAIL_PASS not set');
+  if (!process.env.BREVO_API_KEY) {
+    console.error('BREVO_API_KEY not set');
     return Promise.reject(new Error('Email credentials not configured'));
   }
 
   try {
-    const result = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: to,
+    const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+      sender: {
+        name: 'ExamFlow',
+        email: 'examflow.notifications@gmail.com'
+      },
+      to: [{ email: to }],
       subject: subject,
-      html: html
+      htmlContent: html
+    }, {
+      headers: {
+        'api-key': process.env.BREVO_API_KEY,
+        'Content-Type': 'application/json'
+      }
     });
-    console.log('Email sent successfully to:', to, '| MessageId:', result.messageId);
-    return result;
+
+    console.log('Email sent successfully to:', to, '| MessageId:', response.data.messageId);
+    return response.data;
   } catch (err) {
-    console.error('Nodemailer error:', err.message);
+    console.error('Brevo error:', err.response?.data || err.message);
     throw err;
   }
 };
