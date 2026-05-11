@@ -271,7 +271,6 @@ const AdminDashboard = () => {
                       name={user.name}
                       email={user.email}
                       role={user.role}
-                      status={user.status}
                       date={new Date(user.created_at).toLocaleDateString()}
                       onDelete={handleDeleteUser}
                       theme={theme}
@@ -369,7 +368,7 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
   </button>
 );
 
-const UserRow = ({ user_id, name, email, role, status, date, onDelete, theme }) => (
+const UserRow = ({ user_id, name, email, role, date, onDelete, theme }) => (
   <tr className={`group transition-colors ${theme === 'dark' ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'}`}>
     <td className="px-8 py-5">
       <div className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{name}</div>
@@ -379,9 +378,9 @@ const UserRow = ({ user_id, name, email, role, status, date, onDelete, theme }) 
       <span className={`text-[10px] font-black px-3 py-1 rounded-full ${role === 'TEACHER' ? 'bg-indigo-50 text-indigo-600' : role === 'ADMIN' ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'}`}>{role}</span>
     </td>
     <td className="px-8 py-5">
-      <div className={`flex items-center gap-2 font-bold text-sm ${status === 'ACTIVE' ? 'text-emerald-500' : 'text-rose-500'}`}>
-        <div className={`w-1.5 h-1.5 rounded-full ${status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-        {status}
+      <div className="flex items-center gap-2 font-bold text-sm text-emerald-500">
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        Active
       </div>
     </td>
     <td className="px-8 py-5 text-sm font-medium text-slate-500">{date}</td>

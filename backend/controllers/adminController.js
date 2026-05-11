@@ -3,7 +3,7 @@ const db = require("../config/db");
 // Get all users (for user management table)
 exports.getAllUsers = (req, res) => {
   db.query(
-    "SELECT user_id, name, email, role, status, created_at FROM users ORDER BY created_at DESC",
+    "SELECT user_id, name, email, role, created_at FROM users ORDER BY created_at DESC",
     (err, results) => {
       if (err) return res.status(500).json({ message: "DB error" });
       res.json(results);
