@@ -37,7 +37,7 @@ app.get("/test-db", (req, res) => {
 });
 
 // Serve frontend for all non-API routes
-app.get("*", (req, res) => {
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
 
