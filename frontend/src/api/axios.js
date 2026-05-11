@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  // If we are in production, use a relative path. If local, use localhost.
+  baseURL: import.meta.env.MODE === 'production' 
+    ? '/api' 
+    : 'http://localhost:5000/api',
 });
 
 API.interceptors.request.use((req) => {
