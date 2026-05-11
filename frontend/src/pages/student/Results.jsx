@@ -191,7 +191,7 @@ const MyResultsContent = () => {
                   <div className={`w-16 h-16 rounded-[1.5rem] flex flex-col items-center justify-center font-black transition-all ${
                     !isPublished ? 'bg-slate-100 text-slate-400' :
                     isPassed ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-500 group-hover:text-white' : 'bg-rose-50 text-rose-600 group-hover:bg-rose-500 group-hover:text-white'}`}>
-                    <span className="text-[8px] tracking-widest mb-0.5 uppercase">Grade</span>
+                    <span className="text-[8px] tracking-widest mb-0.5 uppercase">Score</span>
                     <span className="text-xl leading-none">{isPublished ? `${percentage}%` : '—'}</span>
                   </div>
                   <div>
@@ -199,8 +199,6 @@ const MyResultsContent = () => {
                       theme === 'dark' ? 'text-white' : 'text-slate-800'
                     }`}>{result.exam_title}</h4>
                     <div className="flex items-center gap-4 mt-1">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Attempt #{result.attempt_id}</span>
-                      <div className="w-1 h-1 bg-slate-300 rounded-full" />
                       <span className="text-xs font-bold text-slate-400 flex items-center gap-1.5"><Calendar size={12}/> {new Date(result.start_time).toLocaleDateString()}</span>
                     </div>
                   </div>
