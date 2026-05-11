@@ -217,7 +217,7 @@ const StudentDashContent = () => {
             }`}>
               <ClipboardList size={20} />
             </div>
-            <p className="text-purple-400 text-[10px] font-black uppercase tracking-widest mb-1">Avg. Grade</p>
+            <p className="text-purple-400 text-[10px] font-black uppercase tracking-widest mb-1">Avg. Score</p>
             <p className="text-4xl font-black text-purple-600">{stats.avgGrade}%</p>
           </div>
         </div>
@@ -241,7 +241,6 @@ const StudentDashContent = () => {
           <div className={`divide-y ${theme === 'dark' ? 'divide-slate-800' : 'divide-slate-100'}`}>
             {attempts.length > 0 ? attempts.slice(0, 3).map((item) => {
               const isPublished = item.results_published;
-              const showScore = isPublished && item.score !== null && item.score !== undefined;
               
               return (
               <div key={item.attempt_id} className={`p-6 flex items-center justify-between transition-all cursor-default group ${
@@ -249,18 +248,17 @@ const StudentDashContent = () => {
               }`}>
                 <div className="flex items-center gap-6">
                   <div className={`w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-black transition-all ${
-                    showScore ? 'bg-emerald-50 text-emerald-600' : (theme === 'dark' ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-300')
+                    isPublished ? 'bg-emerald-50 text-emerald-600' : (theme === 'dark' ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-300')
                   }`}>
-                    <span className="text-[8px] tracking-widest mb-0.5 uppercase">Grade</span>
-                    <span className="text-xl leading-none">{showScore ? item.score : '—'}</span>
+                    <span className="text-[8px] tracking-widest mb-0.5 uppercase">Status</span>
+                    <span className="text-sm leading-none">{isPublished ? '✓' : '—'}</span>
                   </div>
                   <div>
                     <h4 className={`font-bold text-lg group-hover:text-indigo-600 transition-colors tracking-tight ${
                       theme === 'dark' ? 'text-white' : 'text-slate-800'
                     }`}>{item.exam_title}</h4>
                     <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
-                      Attempt ID: #{item.attempt_id} | {new Date(item.start_time).toLocaleDateString()} | Status: <span className={item.status === 'ONGOING' ? 'text-indigo-600' : 'text-slate-500'}>{item.status}</span>
-                      {showScore ? ` | Score: ${item.score}/${item.total_marks}` : ''}
+                      {new Date(item.start_time).toLocaleDateString()} | Status: <span className={item.status === 'ONGOING' ? 'text-indigo-600' : 'text-slate-500'}>{item.status}</span>
                     </p>
                   </div>
                 </div>
