@@ -4,6 +4,29 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { sendWelcomeEmail, sendPasswordChangedEmail, sendMail } = require("../utils/emailService");
 
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+const sendOTPEmail = (email, otp, name) => {
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:32px;background:#f8fafc;border-radius:16px;">
+      <h1 style="color:#6366f1;font-size:28px;margin-bottom:4px;">Verify Your Email</h1>
+      <p style="color:#64748b;font-size:14px;margin-bottom:24px;">Your OTP for ExamFlow registration</p>
+      <div style="background:white;border-radius:12px;padding:24px;border:1px solid #e2e8f0;">
+        <p style="margin:0 0 16px;color:#0f172a;font-size:16px;">Hi <strong>${name}</strong>,</p>
+        <p style="margin:0 0 24px;color:#475569;">Your one-time password (OTP) is:</p>
+        <div style="background:#f1f5f9;border:2px solid #6366f1;border-radius:8px;padding:16px;text-align:center;margin:0 0 24px;">
+          <p style="margin:0;font-size:32px;font-weight:bold;color:#6366f1;letter-spacing:4px;">${otp}</p>
+        </div>
+        <p style="margin:0 0 8px;color:#475569;">This OTP is valid for <strong>5 minutes</strong>.</p>
+        <p style="margin:0;color:#e11d48;font-weight:bold;">Do not share this OTP with anyone.</p>
+      </div>
+      <p style="color:#94a3b8;font-size:12px;margin-top:24px;text-align:center;">This is an automated message from ExamFlow. Please do not reply.</p>
+    </div>
+  `;
+  return sendMail(email, "ExamFlow: Your OTP for Email Verification", html);
+};
 
 exports.login = (req, res) => {
   const { email, password } = req.body;
@@ -18,22 +41,12 @@ exports.login = (req, res) => {
 
       const user = results[0];
 
-      // Check account status
-      if (user.status === 'REJECTED') {
-        return res.status(403).json({ 
-          message: "Your account has been suspended. Please contact admin.",
-          rejected: true 
-        });
-      }
-
-      // Check if user has password (Google users might not)
       if (!user.password) {
         return res.status(403).json({ 
           message: "This account was created with Google Sign-In. Please use 'Continue with Google' to log in. You can set a password in Security & Access settings."
         });
       }
 
-      //Block login if email not verified
       if (!user.is_verified) {
         return res.status(403).json({ message: "Please verify your email before logging in." });
       }
@@ -83,19 +96,21 @@ exports.signup = (req, res) => {
 
       try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const status = "ACTIVE";
+        const otp = generateOTP();
+        const otpExpiry = Date.now() + 5 * 60 * 1000;
 
         db.query(
           `INSERT INTO users 
-          (name, email, password, role, status, is_verified) 
-          VALUES (?, ?, ?, ?, ?, ?)`,
+          (name, email, password, role, is_verified, otp, otp_expiry) 
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
             name,
             email,
             hashedPassword,
             role,
-            status,
-            1
+            0,
+            otp,
+            otpExpiry
           ],
           (err, result) => {
             if (err) {
@@ -103,15 +118,115 @@ exports.signup = (req, res) => {
               return res.status(500).json({ message: "DB error", error: err.message });
             }
 
-            return res.status(201).json({
-              message: "Account created successfully. You can now log in."
-            });
+            sendOTPEmail(email, otp, name)
+              .then(() => {
+                res.status(201).json({
+                  message: "Account created. OTP sent to your email.",
+                  email: email
+                });
+              })
+              .catch(err => {
+                console.error('OTP email failed:', err);
+                res.status(201).json({
+                  message: "Account created but OTP email failed. Please try resending.",
+                  email: email
+                });
+              });
           }
         );
       } catch (hashErr) {
         console.error("Hashing error:", hashErr);
         return res.status(500).json({ message: "Password hashing failed" });
       }
+    }
+  );
+};
+
+exports.verifyOTP = (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ message: "Email and OTP required" });
+  }
+
+  db.query(
+    "SELECT * FROM users WHERE email = ?",
+    [email],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: "DB error" });
+
+      if (result.length === 0) {
+        return res.status(400).json({ message: "User not found" });
+      }
+
+      const user = result[0];
+
+      if (Date.now() > user.otp_expiry) {
+        return res.status(400).json({ message: "OTP expired" });
+      }
+
+      if (user.otp !== otp) {
+        return res.status(400).json({ message: "Invalid OTP" });
+      }
+
+      db.query(
+        "UPDATE users SET is_verified = 1, otp = NULL, otp_expiry = NULL WHERE user_id = ?",
+        [user.user_id],
+        (err) => {
+          if (err) return res.status(500).json({ message: "DB error" });
+
+          sendWelcomeEmail(user.name, user.email, user.role)
+            .catch(err => console.log("Welcome email failed:", err));
+
+          res.json({ message: "Email verified successfully" });
+        }
+      );
+    }
+  );
+};
+
+exports.resendOTP = (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Email required" });
+  }
+
+  db.query(
+    "SELECT * FROM users WHERE email = ?",
+    [email],
+    (err, result) => {
+      if (err) return res.status(500).json({ message: "DB error" });
+
+      if (result.length === 0) {
+        return res.status(400).json({ message: "User not found" });
+      }
+
+      const user = result[0];
+
+      if (user.is_verified) {
+        return res.status(400).json({ message: "Email already verified" });
+      }
+
+      const otp = generateOTP();
+      const otpExpiry = Date.now() + 5 * 60 * 1000;
+
+      db.query(
+        "UPDATE users SET otp = ?, otp_expiry = ? WHERE user_id = ?",
+        [otp, otpExpiry, user.user_id],
+        (err) => {
+          if (err) return res.status(500).json({ message: "DB error" });
+
+          sendOTPEmail(email, otp, user.name)
+            .then(() => {
+              res.json({ message: "OTP resent successfully" });
+            })
+            .catch(err => {
+              console.error('OTP email failed:', err);
+              res.status(500).json({ message: "Failed to send OTP" });
+            });
+        }
+      );
     }
   );
 };
@@ -189,13 +304,8 @@ exports.googleAuth = async (req, res) => {
     db.query("SELECT * FROM users WHERE email = ?", [email], (err, results) => {
       if (err) return res.status(500).json({ message: "DB error" });
 
-      // Existing user — log them in
       if (results.length > 0) {
         const user = results[0];
-
-        if (user.status === 'REJECTED') {
-          return res.status(403).json({ message: "Your account has been suspended. Please contact admin." });
-        }
 
         const token = jwt.sign(
           { user_id: user.user_id, role: user.role },
@@ -209,17 +319,15 @@ exports.googleAuth = async (req, res) => {
         });
       }
 
-      // New user — role required
       if (!role) {
         return res.status(200).json({ newUser: true, name, email });
       }
 
-      // Create new user
       db.query(
-        "INSERT INTO users (name, email, password, role, status) VALUES (?, ?, NULL, ?, 'ACTIVE')",
+        "INSERT INTO users (name, email, password, role, is_verified) VALUES (?, ?, NULL, ?, 1)",
         [name, email, role],
         (err2, result) => {
-          if (err2) return res.status(500) .json({ message: "DB error" });
+          if (err2) return res.status(500).json({ message: "DB error" });
 
           const token = jwt.sign(
             { user_id: result.insertId, role },
@@ -227,7 +335,6 @@ exports.googleAuth = async (req, res) => {
             { expiresIn: "7d" }
           );
 
-          // Send welcome email (non-blocking)
           sendWelcomeEmail(name, email, role).catch(err => console.error('Welcome email failed:', err));
 
           res.status(201).json({
@@ -241,42 +348,4 @@ exports.googleAuth = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Google auth failed" });
   }
-};
-
-exports.verifyEmail = (req, res) => {
-  const { token } = req.params;
-
-  db.query(
-    "SELECT * FROM users WHERE verification_token = ?",
-    [token],
-    (err, result) => {
-      if (err) return res.status(500).json({ message: "DB error" });
-
-      if (result.length === 0) {
-        return res.status(400).json({ message: "Invalid token" });
-      }
-
-      const user = result[0];
-
-      // Check expiry
-      if (Date.now() > Number(user.verification_token_expiry)) {
-        return res.status(400).json({ message: "Token expired" });
-      }
-
-      // Update user
-      db.query(
-        "UPDATE users SET is_verified = true, verification_token = NULL, verification_token_expiry = NULL WHERE user_id = ?",
-        [user.user_id],
-        (err) => {
-          if (err) return res.status(500).json({ message: "DB error" });
-
-          // ✅ SEND WELCOME EMAIL HERE
-          sendWelcomeEmail(user.name, user.email, user.role)
-            .catch(err => console.log("Welcome email failed:", err));
-
-          res.json({ message: "Email verified successfully" });
-        }
-      );
-    }
-  );
 };

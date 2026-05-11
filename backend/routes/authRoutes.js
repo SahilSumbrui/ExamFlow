@@ -10,6 +10,7 @@ router.post("/google", authController.googleAuth);
 router.get("/users/:user_id", verifyToken, authController.getUserProfile);
 router.put("/users/:user_id", verifyToken, authController.updateProfile);
 router.put("/change-password", verifyToken, authController.changePassword);
-router.get("/verify/:token", authController.verifyEmail);
+router.post("/verify-otp", authController.verifyOTP);
+router.post("/resend-otp", authController.resendOTP);
 
 module.exports = router;

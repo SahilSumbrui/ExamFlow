@@ -83,8 +83,7 @@ const LoginContent = () => {
       }
 
       if (authMode === 'signup') {
-        alert(response.data.message);
-        setAuthMode('login');
+        navigate('/verify-otp', { state: { email: formData.email } });
         return;
       }
 

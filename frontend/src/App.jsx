@@ -22,6 +22,7 @@ import Preferences from "./pages/student/StudentSettings";
 import StudentAnalysis from "./pages/student/StudentAnalysis";
 import TeacherPreferences from "./pages/teacher/teacherSettings";
 import VerifyEmail from "./pages/VerifyEmail";
+import VerifyOTP from "./pages/VerifyOTP";
 
 export const ThemeContext = createContext();
 
@@ -113,6 +114,7 @@ function App() {
             <Leaderboard />
           </ProtectedRoute>
         } />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/student/exam/:attemptId" element={
           <ProtectedRoute role="STUDENT">
