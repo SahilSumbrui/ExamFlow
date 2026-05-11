@@ -37,8 +37,12 @@ app.get("/test-db", (req, res) => {
 });
 
 // Serve frontend for all non-API routes
-app.get('(.*)', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+  } else {
+    next();
+  }
 });
 
 app.listen(PORT, () => {
