@@ -19,21 +19,27 @@ const AdminExamOversight = () => {
   
   const [exam, setExam] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchExam = async () => {
-      try {
-        const res = await API.get(`/exams/${examId}`);
-        console.log('Exam data:', res.data);
-        setExam(res.data);
-      } catch (error) {
-        console.error("Error fetching exam:", error);
-        setExam(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchExam();
+    const timer = setTimeout(() => {
+      const fetchExam = async () => {
+        try {
+          const res = await API.get(`/exams/${examId}`);
+          console.log('Exam response:', res.data);
+          setExam(res.data);
+          setError(null);
+        } catch (err) {
+          console.error("Error fetching exam:", err);
+          setError(err.response?.data?.message || 'Failed to load exam');
+          setExam(null);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchExam();
+    }, 600);
+    return () => clearTimeout(timer);
   }, [examId]);
 
   const totalMarks = useMemo(() => {
@@ -49,11 +55,11 @@ const AdminExamOversight = () => {
     );
   }
 
-  if (!exam || !exam.questions) {
+  if (error || !exam) {
     return (
       <div className={`h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#0b0f1a]' : 'bg-slate-50'}`}>
         <div className="text-center">
-          <p className="text-rose-500 font-bold mb-4">Exam not found</p>
+          <p className="text-rose-500 font-bold mb-4">{error || 'Exam not found'}</p>
           <button onClick={() => navigate('/admin/dashboard')} className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold">
             Back to Dashboard
           </button>
@@ -84,7 +90,7 @@ const AdminExamOversight = () => {
               </span>
             </div>
             <p className="text-slate-500 font-medium text-sm">
-              Instructor: <span className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{exam.teacher_name}</span>
+              Instructor: <span className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{exam.teacher_name || 'Unknown'}</span>
             </p>
           </div>
         </header>
@@ -110,7 +116,7 @@ const AdminExamOversight = () => {
               <FileText size={18} />
               <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Questions</span>
             </div>
-            <p className="text-2xl font-black text-purple-600">{exam.questions.length}</p>
+            <p className="text-2xl font-black text-purple-600">{exam.questions ? exam.questions.length : 0}</p>
           </div>
           <div className={`p-6 rounded-[2rem] border shadow-sm ${theme === 'dark' ? 'bg-blue-500/10 border-blue-500/20' : 'bg-gradient-to-br from-blue-50 to-white border-blue-100'}`}>
             <div className="flex items-center gap-3 text-blue-600 mb-3">
@@ -174,5 +180,11 @@ const AdminExamOversight = () => {
     </div>
   );
 };
+
+const Loader2 = ({ className, size }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+  </svg>
+);
 
 export default AdminExamOversight;
