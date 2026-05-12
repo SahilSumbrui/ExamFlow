@@ -10,6 +10,8 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminSettings from "./pages/admin/AdminSettings";
 import StudentAcademicHistory from "./pages/admin/StudentAcademicHistory";
+import AdminExamOversight from "./pages/admin/AdminExamOversight";
+import AdminExamSubmissions from "./pages/admin/AdminExamSubmissions";
 import QuestionBuilder from "./pages/teacher/QuestionBuilder";
 import ExamRoomContent from "./pages/student/Exam";
 import StudentResultContent from "./pages/student/StudenResult";
@@ -199,6 +201,18 @@ function App() {
         <Route path="/admin/student/:studentId" element={
           <ProtectedRoute role="ADMIN">
             <StudentAcademicHistory />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/exam/:examId" element={
+          <ProtectedRoute role="ADMIN">
+            <AdminExamOversight />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/exam-submissions/:examId" element={
+          <ProtectedRoute role="ADMIN">
+            <AdminExamSubmissions />
           </ProtectedRoute>
         } />
 

@@ -210,27 +210,21 @@ exports.getScoreDistribution = (req, res) => {
 exports.getStudentAnalytics = (req, res) => {
   const { studentId } = req.params;
 
+  // First, get all courses with attempts for this student
   const query = `
-    SELECT 
+    SELECT DISTINCT
       c.course_id as id,
-      c.title,
+      c.course_name as title,
       COUNT(DISTINCT a.attempt_id) as examCount,
       ROUND(AVG(a.score), 2) as avg,
       ROUND(AVG(a.score), 2) as classAvg,
       'neutral' as velocity,
-      'neutral' as trend,
-      JSON_ARRAYAGG(
-        JSON_OBJECT(
-          'name', e.title,
-          'score', a.score,
-          'time', CONCAT(FLOOR(TIME_TO_SEC(TIMEDIFF(a.end_time, a.start_time))/60), 'm')
-        )
-      ) as tests
+      'neutral' as trend
     FROM courses c
-    LEFT JOIN exams e ON c.course_id = e.course_id
-    LEFT JOIN attempts a ON e.exam_id = a.exam_id AND a.student_id = ?
-    WHERE a.attempt_id IS NOT NULL
-    GROUP BY c.course_id, c.title
+    INNER JOIN exams e ON c.course_id = e.course_id
+    INNER JOIN attempts a ON e.exam_id = a.exam_id AND a.student_id = ?
+    WHERE a.score IS NOT NULL
+    GROUP BY c.course_id, c.course_name
   `;
 
   db.query(query, [studentId], (err, courses) => {
@@ -243,10 +237,10 @@ exports.getStudentAnalytics = (req, res) => {
       SELECT 
         COUNT(DISTINCT a.attempt_id) as totalCompleted,
         ROUND(AVG(a.score), 2) as avgScore,
-        c.title as coreStrength
+        c.course_name as coreStrength
       FROM attempts a
-      LEFT JOIN exams e ON a.exam_id = e.exam_id
-      LEFT JOIN courses c ON e.course_id = c.course_id
+      INNER JOIN exams e ON a.exam_id = e.exam_id
+      INNER JOIN courses c ON e.course_id = c.course_id
       WHERE a.student_id = ? AND a.score IS NOT NULL
       GROUP BY c.course_id
       ORDER BY AVG(a.score) DESC
@@ -259,16 +253,51 @@ exports.getStudentAnalytics = (req, res) => {
         return res.status(500).json({ message: "Failed to fetch student stats" });
       }
 
-      const cleanCourses = courses.filter(c => c.examCount > 0).map(c => ({
-        ...c,
-        tests: c.tests ? JSON.parse(c.tests).filter(t => t.score !== null) : []
-      }));
+      // Fetch test details for each course
+      const testQuery = `
+        SELECT 
+          c.course_id,
+          e.title as name,
+          a.score,
+          CONCAT(FLOOR(TIME_TO_SEC(TIMEDIFF(a.end_time, a.start_time))/60), 'm') as time
+        FROM attempts a
+        INNER JOIN exams e ON a.exam_id = e.exam_id
+        INNER JOIN courses c ON e.course_id = c.course_id
+        WHERE a.student_id = ? AND a.score IS NOT NULL
+        ORDER BY a.start_time ASC
+      `;
 
-      res.json({
-        totalCompleted: stats[0]?.totalCompleted || 0,
-        avgScore: stats[0]?.avgScore || 0,
-        coreStrength: stats[0]?.coreStrength || 'N/A',
-        courses: cleanCourses
+      db.query(testQuery, [studentId], (err, tests) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: "Failed to fetch test details" });
+        }
+
+        // Group tests by course
+        const courseTests = {};
+        tests.forEach(test => {
+          if (!courseTests[test.course_id]) {
+            courseTests[test.course_id] = [];
+          }
+          courseTests[test.course_id].push({
+            name: test.name,
+            score: test.score,
+            time: test.time
+          });
+        });
+
+        // Attach tests to courses
+        const cleanCourses = courses.map(c => ({
+          ...c,
+          tests: courseTests[c.id] || []
+        }));
+
+        res.json({
+          totalCompleted: stats[0]?.totalCompleted || 0,
+          avgScore: stats[0]?.avgScore || 0,
+          coreStrength: stats[0]?.coreStrength || 'N/A',
+          courses: cleanCourses
+        });
       });
     });
   });

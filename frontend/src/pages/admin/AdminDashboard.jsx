@@ -298,22 +298,23 @@ const AdminDashboard = () => {
                 <p className="text-slate-400 text-sm">No exams have been created yet.</p>
               </div>
             ) : (
-              allExams.map((exam) => {
-                const now = new Date();
-                const isLive = now >= new Date(exam.start_time) && now <= new Date(exam.end_time);
-                return (
-                  <ExamMonitorRow
-                    key={exam.exam_id}
-                    exam_id={exam.exam_id}
-                    title={exam.title}
-                    teacher={exam.teacher_name}
-                    attempts={exam.attempt_count}
-                    status={isLive ? 'Live' : 'Idle'}
-                    onDelete={handleDeleteExam}
-                    theme={theme}
-                  />
-                );
-              })
+                  {allExams.map((exam) => {
+                    const now = new Date();
+                    const isLive = now >= new Date(exam.start_time) && now <= new Date(exam.end_time);
+                    return (
+                      <ExamMonitorRow
+                        key={exam.exam_id}
+                        exam_id={exam.exam_id}
+                        title={exam.title}
+                        teacher={exam.teacher_name}
+                        attempts={exam.attempt_count}
+                        status={isLive ? 'Live' : 'Idle'}
+                        onDelete={handleDeleteExam}
+                        theme={theme}
+                        navigate={navigate}
+                      />
+                    );
+                  })
             )}
           </div>
         )}
@@ -393,8 +394,8 @@ const UserRow = ({ user_id, name, email, role, date, onDelete, theme, navigate }
   </tr>
 );
 
-const ExamMonitorRow = ({ exam_id, title, teacher, attempts, status, onDelete, theme }) => (
-  <div className={`p-6 rounded-[2rem] border shadow-sm flex items-center justify-between group transition-all ${theme === 'dark' ? 'bg-[#161b2b] border-slate-800 hover:border-rose-500' : 'bg-white border-slate-200 hover:border-rose-200'}`}>
+const ExamMonitorRow = ({ exam_id, title, teacher, attempts, status, onDelete, theme, navigate }) => (
+  <div onClick={() => navigate(`/admin/exam/${exam_id}`)} className={`p-6 rounded-[2rem] border shadow-sm flex items-center justify-between group transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#161b2b] border-slate-800 hover:border-rose-500' : 'bg-white border-slate-200 hover:border-rose-200'}`}>
     <div className="flex items-center gap-6">
       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${status === 'Live' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'}`}>
         <Activity size={20} className={status === 'Live' ? 'animate-pulse' : ''} />
@@ -404,7 +405,7 @@ const ExamMonitorRow = ({ exam_id, title, teacher, attempts, status, onDelete, t
         <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Instructor: {teacher} | {attempts} Attempts</p>
       </div>
     </div>
-    <button onClick={() => onDelete(exam_id)} className="p-2 text-slate-300 hover:text-red-600 transition-colors" title="Delete Exam">
+    <button onClick={(e) => { e.stopPropagation(); onDelete(exam_id); }} className="p-2 text-slate-300 hover:text-red-600 transition-colors" title="Delete Exam">
       <Trash2 size={20} />
     </button>
   </div>
