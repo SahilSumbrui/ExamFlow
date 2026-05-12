@@ -8,7 +8,7 @@ import Leaderboard from "./pages/student/Leaderboard";
 import TeacherDashboard from "./pages/teacher/TeacherDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminSettings from "./pages/admin/AdminSettings";
+import StudentAcademicHistory from "./pages/admin/StudentAcademicHistory";
 import QuestionBuilder from "./pages/teacher/QuestionBuilder";
 import ExamRoomContent from "./pages/student/Exam";
 import StudentResultContent from "./pages/student/StudenResult";
@@ -192,6 +192,12 @@ function App() {
         <Route path="/admin/dashboard" element={
           <ProtectedRoute role="ADMIN">
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/student/:studentId" element={
+          <ProtectedRoute role="ADMIN">
+            <StudentAcademicHistory />
           </ProtectedRoute>
         } />
 
