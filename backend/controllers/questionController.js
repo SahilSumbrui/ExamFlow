@@ -61,19 +61,30 @@ exports.createQuestion = (req, res) => {
 exports.deleteQuestion = (req, res) => {
   const { question_id } = req.params;
 
-  const sql = `DELETE FROM questions WHERE question_id = ?`;
+  // 1. First, delete all options linked to this question
+  const deleteOptionsSql = `DELETE FROM options WHERE question_id = ?`;
 
-  db.query(sql, [question_id], (err, result) => {
+  db.query(deleteOptionsSql, [question_id], (err) => {
     if (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Failed to delete question" });
+      console.error("Error deleting options:", err);
+      return res.status(500).json({ message: "Failed to delete associated options" });
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Question not found" });
-    }
+    // 2. Now that the children (options) are gone, delete the parent (question)
+    const deleteQuestionSql = `DELETE FROM questions WHERE question_id = ?`;
 
-    res.json({ message: "Question deleted successfully" });
+    db.query(deleteQuestionSql, [question_id], (err, result) => {
+      if (err) {
+        console.error("Error deleting question:", err);
+        return res.status(500).json({ message: "Failed to delete question" });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+
+      res.json({ message: "Question and its options deleted successfully" });
+    });
   });
 };
 
