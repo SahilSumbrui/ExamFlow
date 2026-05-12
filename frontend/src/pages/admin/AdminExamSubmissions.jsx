@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../App';
-import { ArrowLeft, Eye, Loader2, CheckCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Loader2, CheckCircle, Clock } from 'lucide-react';
 import API from '../../api/axios';
 
 const AdminExamSubmissions = () => {
@@ -75,7 +75,6 @@ const AdminExamSubmissions = () => {
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Status</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Score</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Time Taken</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -109,14 +108,6 @@ const AdminExamSubmissions = () => {
                             })()}
                           </div>
                         ) : 'N/A'}
-                      </td>
-                      <td className="p-6 text-right">
-                        <button 
-                          onClick={() => setSelectedSubmission(sub)}
-                          className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
-                        >
-                          <Eye size={18} />
-                        </button>
                       </td>
                     </tr>
                   ))}
