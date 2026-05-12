@@ -298,23 +298,25 @@ const AdminDashboard = () => {
                 <p className="text-slate-400 text-sm">No exams have been created yet.</p>
               </div>
             ) : (
-                  {allExams.map((exam) => {
-                    const now = new Date();
-                    const isLive = now >= new Date(exam.start_time) && now <= new Date(exam.end_time);
-                    return (
-                      <ExamMonitorRow
-                        key={exam.exam_id}
-                        exam_id={exam.exam_id}
-                        title={exam.title}
-                        teacher={exam.teacher_name}
-                        attempts={exam.attempt_count}
-                        status={isLive ? 'Live' : 'Idle'}
-                        onDelete={handleDeleteExam}
-                        theme={theme}
-                        navigate={navigate}
-                      />
-                    );
-                  })
+              <>
+                {allExams.map((exam) => {
+                  const now = new Date();
+                  const isLive = now >= new Date(exam.start_time) && now <= new Date(exam.end_time);
+                  return (
+                    <ExamMonitorRow
+                      key={exam.exam_id}
+                      exam_id={exam.exam_id}
+                      title={exam.title}
+                      teacher={exam.teacher_name}
+                      attempts={exam.attempt_count}
+                      status={isLive ? 'Live' : 'Idle'}
+                      onDelete={handleDeleteExam}
+                      theme={theme}
+                      navigate={navigate}
+                    />
+                  );
+                })}
+              </>
             )}
           </div>
         )}
