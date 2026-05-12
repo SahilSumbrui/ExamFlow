@@ -302,3 +302,45 @@ exports.getStudentAnalytics = (req, res) => {
     });
   });
 };
+
+// Get teacher's exams for admin view
+exports.getTeacherExams = (req, res) => {
+  const { teacherId } = req.params;
+
+  const query = `
+    SELECT 
+      e.exam_id,
+      e.title,
+      e.exam_code,
+      e.start_time,
+      e.end_time,
+      e.duration_minutes,
+      e.total_marks,
+      u.name as teacher_name
+    FROM exams e
+    LEFT JOIN users u ON e.teacher_id = u.user_id
+    WHERE e.teacher_id = ?
+    ORDER BY e.created_at DESC
+  `;
+
+  db.query(query, [teacherId], (err, exams) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Failed to fetch teacher exams" });
+    }
+
+    // Get teacher name
+    const teacherQuery = `SELECT name FROM users WHERE user_id = ?`;
+    db.query(teacherQuery, [teacherId], (err, teacher) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Failed to fetch teacher info" });
+      }
+
+      res.json({
+        exams: exams,
+        teacher_name: teacher[0]?.name || 'Teacher'
+      });
+    });
+  });
+};

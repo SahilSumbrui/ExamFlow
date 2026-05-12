@@ -9,7 +9,8 @@ const {
   getSystemStats,
   getAttemptsOverTime,
   getScoreDistribution,
-  getStudentAnalytics
+  getStudentAnalytics,
+  getTeacherExams
 } = require("../controllers/adminController");
 
 const { verifyToken } = require("../middleware/authMiddleware");
@@ -77,6 +78,13 @@ router.get(
   verifyToken,
   allowRoles("ADMIN"),
   getStudentAnalytics
+);
+
+router.get(
+  "/teacher/:teacherId/exams",
+  verifyToken,
+  allowRoles("ADMIN"),
+  getTeacherExams
 );
 
 module.exports = router;

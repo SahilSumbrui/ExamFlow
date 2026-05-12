@@ -216,6 +216,18 @@ function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/admin/teacher/:teacherId" element={
+          <ProtectedRoute role="ADMIN">
+            <MyExams />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin/teacher/:teacherId/exam/:examId" element={
+          <ProtectedRoute role="ADMIN">
+            <ExamDetailsContent />
+          </ProtectedRoute>
+        } />
+
         <Route path="/admin/settings" element={
           <ProtectedRoute role="ADMIN">
             <AdminSettings />

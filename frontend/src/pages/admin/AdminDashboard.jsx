@@ -372,29 +372,39 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
   </button>
 );
 
-const UserRow = ({ user_id, name, email, role, date, onDelete, theme, navigate }) => (
-  <tr className={`group transition-colors cursor-pointer ${theme === 'dark' ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'}`}>
-    <td className="px-8 py-5" onClick={() => role === 'STUDENT' && navigate(`/admin/student/${user_id}`)}>
-      <div className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{name}</div>
-      <div className="text-xs text-slate-400">{email}</div>
-    </td>
-    <td className="px-8 py-5" onClick={() => role === 'STUDENT' && navigate(`/admin/student/${user_id}`)}>
-      <span className={`text-[10px] font-black px-3 py-1 rounded-full ${role === 'TEACHER' ? 'bg-indigo-50 text-indigo-600' : role === 'ADMIN' ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'}`}>{role}</span>
-    </td>
-    <td className="px-8 py-5" onClick={() => role === 'STUDENT' && navigate(`/admin/student/${user_id}`)}>
-      <div className="flex items-center gap-2 font-bold text-sm text-emerald-500">
-        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-        Active
-      </div>
-    </td>
-    <td className="px-8 py-5 text-sm font-medium text-slate-500" onClick={() => role === 'STUDENT' && navigate(`/admin/student/${user_id}`)}>{date}</td>
-    <td className="px-8 py-5 text-right">
-      <button onClick={() => onDelete(user_id)} title="Delete User" className="p-2 text-slate-300 hover:text-red-600 transition-colors">
-        <Trash2 size={18} />
-      </button>
-    </td>
-  </tr>
-);
+const UserRow = ({ user_id, name, email, role, date, onDelete, theme, navigate }) => {
+  const handleRowClick = () => {
+    if (role === 'STUDENT') {
+      navigate(`/admin/student/${user_id}`);
+    } else if (role === 'TEACHER') {
+      navigate(`/admin/teacher/${user_id}`);
+    }
+  };
+
+  return (
+    <tr className={`group transition-colors ${(role === 'STUDENT' || role === 'TEACHER') ? 'cursor-pointer' : ''} ${theme === 'dark' ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'}`}>
+      <td className="px-8 py-5" onClick={handleRowClick}>
+        <div className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{name}</div>
+        <div className="text-xs text-slate-400">{email}</div>
+      </td>
+      <td className="px-8 py-5" onClick={handleRowClick}>
+        <span className={`text-[10px] font-black px-3 py-1 rounded-full ${role === 'TEACHER' ? 'bg-indigo-50 text-indigo-600' : role === 'ADMIN' ? 'bg-rose-50 text-rose-600' : 'bg-slate-100 text-slate-600'}`}>{role}</span>
+      </td>
+      <td className="px-8 py-5" onClick={handleRowClick}>
+        <div className="flex items-center gap-2 font-bold text-sm text-emerald-500">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          Active
+        </div>
+      </td>
+      <td className="px-8 py-5 text-sm font-medium text-slate-500" onClick={handleRowClick}>{date}</td>
+      <td className="px-8 py-5 text-right">
+        <button onClick={() => onDelete(user_id)} title="Delete User" className="p-2 text-slate-300 hover:text-red-600 transition-colors">
+          <Trash2 size={18} />
+        </button>
+      </td>
+    </tr>
+  );
+};
 
 const ExamMonitorRow = ({ exam_id, title, teacher, attempts, status, onDelete, theme, navigate }) => (
   <div onClick={() => navigate(`/admin/exam/${exam_id}`)} className={`p-6 rounded-[2rem] border shadow-sm flex items-center justify-between group transition-all cursor-pointer ${theme === 'dark' ? 'bg-[#161b2b] border-slate-800 hover:border-rose-500' : 'bg-white border-slate-200 hover:border-rose-200'}`}>
