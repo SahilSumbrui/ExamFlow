@@ -24,9 +24,11 @@ const AdminExamOversight = () => {
     const fetchExam = async () => {
       try {
         const res = await API.get(`/exams/${examId}`);
+        console.log('Exam data:', res.data);
         setExam(res.data);
       } catch (error) {
         console.error("Error fetching exam:", error);
+        setExam(null);
       } finally {
         setLoading(false);
       }
@@ -35,7 +37,7 @@ const AdminExamOversight = () => {
   }, [examId]);
 
   const totalMarks = useMemo(() => {
-    if (!exam) return 0;
+    if (!exam || !exam.questions) return 0;
     return exam.questions.reduce((acc, q) => acc + q.marks, 0);
   }, [exam]);
 
@@ -47,7 +49,7 @@ const AdminExamOversight = () => {
     );
   }
 
-  if (!exam) {
+  if (!exam || !exam.questions) {
     return (
       <div className={`h-screen flex items-center justify-center ${theme === 'dark' ? 'bg-[#0b0f1a]' : 'bg-slate-50'}`}>
         <div className="text-center">
@@ -123,34 +125,40 @@ const AdminExamOversight = () => {
         <div className="space-y-6">
           <h3 className={`text-xl font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>Question Pool</h3>
 
-          <div className={`rounded-[2rem] md:rounded-[3rem] border shadow-sm overflow-x-auto ${theme === 'dark' ? 'bg-[#161b2b] border-slate-800' : 'bg-white border-slate-200'}`}>
-            <table className="w-full text-left border-collapse min-w-[600px]">
-              <thead>
-                <tr className={theme === 'dark' ? 'bg-slate-800/30' : 'bg-slate-50/50'}>
-                  <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">#</th>
-                  <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Question</th>
-                  <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Type</th>
-                  <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-center">Marks</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {exam.questions.map((q, idx) => (
-                  <tr key={q.question_id} className={`transition-all ${theme === 'dark' ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50/50'}`}>
-                    <td className="p-6 font-black text-slate-300">{(idx + 1).toString().padStart(2, '0')}</td>
-                    <td className="p-6 max-w-xs md:max-w-md">
-                      <p className={`font-bold truncate ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{q.question_text}</p>
-                    </td>
-                    <td className="p-6">
-                      <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase ${q.type === 'MCQ' ? 'bg-purple-50 text-purple-600 border border-purple-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
-                        {q.type}
-                      </span>
-                    </td>
-                    <td className={`p-6 text-center font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{q.marks}</td>
+          {exam.questions && exam.questions.length > 0 ? (
+            <div className={`rounded-[2rem] md:rounded-[3rem] border shadow-sm overflow-x-auto ${theme === 'dark' ? 'bg-[#161b2b] border-slate-800' : 'bg-white border-slate-200'}`}>
+              <table className="w-full text-left border-collapse min-w-[600px]">
+                <thead>
+                  <tr className={theme === 'dark' ? 'bg-slate-800/30' : 'bg-slate-50/50'}>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">#</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Question</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Type</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-center">Marks</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {exam.questions.map((q, idx) => (
+                    <tr key={q.question_id} className={`transition-all ${theme === 'dark' ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50/50'}`}>
+                      <td className="p-6 font-black text-slate-300">{(idx + 1).toString().padStart(2, '0')}</td>
+                      <td className="p-6 max-w-xs md:max-w-md">
+                        <p className={`font-bold truncate ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{q.question_text}</p>
+                      </td>
+                      <td className="p-6">
+                        <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase ${q.type === 'MCQ' ? 'bg-purple-50 text-purple-600 border border-purple-100' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                          {q.type}
+                        </span>
+                      </td>
+                      <td className={`p-6 text-center font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{q.marks}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className={`p-12 rounded-[2rem] text-center ${theme === 'dark' ? 'bg-[#161b2b] border-slate-800' : 'bg-white border-slate-200'} border`}>
+              <p className="text-slate-400 font-bold">No questions added to this exam</p>
+            </div>
+          )}
         </div>
 
         {/* View Submissions Button */}

@@ -112,8 +112,9 @@ exports.getExamById = (req, res) => {
   const { exam_id } = req.params;
 
   const examSql = `
-    SELECT e.*, COUNT(DISTINCT a.attempt_id) as submissionsCount
+    SELECT e.*, u.name as teacher_name, COUNT(DISTINCT a.attempt_id) as submissionsCount
     FROM exams e
+    LEFT JOIN users u ON e.teacher_id = u.user_id
     LEFT JOIN attempts a ON e.exam_id = a.exam_id
     WHERE e.exam_id = ?
     GROUP BY e.exam_id
