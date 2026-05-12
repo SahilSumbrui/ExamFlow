@@ -48,10 +48,11 @@ const getMockExam = (id) => ({
 import API from '../../api/axios';
 
 const ExamDetailsContent = () => {
-  const { examId } = useParams();
+  const { examId, teacherId } = useParams();
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { theme } = useTheme();
+  const isAdminView = !!teacherId;
   
   const [exam, setExam] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -166,7 +167,7 @@ const ExamDetailsContent = () => {
         {/* Navigation / Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-            <button onClick={() => navigate('/teacher/dashboard', { replace: true })} className={`p-3 border rounded-2xl text-slate-400 hover:text-slate-900 transition-all shadow-sm ${
+            <button onClick={() => navigate(isAdminView ? `/admin/teacher/${teacherId}` : '/teacher/dashboard', { replace: true })} className={`p-3 border rounded-2xl text-slate-400 hover:text-slate-900 transition-all shadow-sm ${
               theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'
             }`}>
               <ArrowLeft size={20} />
@@ -183,44 +184,48 @@ const ExamDetailsContent = () => {
           </div>
 
           <div className="flex gap-3">
-            <button 
-              onClick={() => {
-                // Format datetime for datetime-local input without timezone conversion
-                const formatDateTimeLocal = (dateStr) => {
-                  if (!dateStr) return '';
-                  const date = new Date(dateStr);
-                  const year = date.getFullYear();
-                  const month = String(date.getMonth() + 1).padStart(2, '0');
-                  const day = String(date.getDate()).padStart(2, '0');
-                  const hours = String(date.getHours()).padStart(2, '0');
-                  const minutes = String(date.getMinutes()).padStart(2, '0');
-                  return `${year}-${month}-${day}T${hours}:${minutes}`;
-                };
-                
-                setEditForm({ 
-                  title: exam.title, 
-                  end_time: formatDateTimeLocal(exam.end_time), 
-                  duration_minutes: exam.duration_minutes 
-                });
-                setShowEditModal(true);
-              }}
-              className={`px-6 py-4 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-lg flex items-center gap-2 ${
-                theme === 'dark' ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              <Edit3 size={18} /> Edit Exam
-            </button>
-            <button 
-              onClick={toggleStatus}
-              className={`flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-xl ${
-                exam.status === 'PUBLISHED' 
-                  ? theme === 'dark' ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-amber-500 text-white shadow-amber-200'
-                  : theme === 'dark' ? 'bg-indigo-600 text-white shadow-indigo-500/20 hover:bg-indigo-700' : 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700'
-              }`}
-            >
-              {exam.status === 'PUBLISHED' ? <AlertCircle size={18} /> : <Globe size={18} />}
-              {exam.status === 'PUBLISHED' ? 'Unpublish' : 'Publish Exam'}
-            </button>
+            {!isAdminView && (
+              <>
+                <button 
+                  onClick={() => {
+                    // Format datetime for datetime-local input without timezone conversion
+                    const formatDateTimeLocal = (dateStr) => {
+                      if (!dateStr) return '';
+                      const date = new Date(dateStr);
+                      const year = date.getFullYear();
+                      const month = String(date.getMonth() + 1).padStart(2, '0');
+                      const day = String(date.getDate()).padStart(2, '0');
+                      const hours = String(date.getHours()).padStart(2, '0');
+                      const minutes = String(date.getMinutes()).padStart(2, '0');
+                      return `${year}-${month}-${day}T${hours}:${minutes}`;
+                    };
+                    
+                    setEditForm({ 
+                      title: exam.title, 
+                      end_time: formatDateTimeLocal(exam.end_time), 
+                      duration_minutes: exam.duration_minutes 
+                    });
+                    setShowEditModal(true);
+                  }}
+                  className={`px-6 py-4 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-lg flex items-center gap-2 ${
+                    theme === 'dark' ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  <Edit3 size={18} /> Edit Exam
+                </button>
+                <button 
+                  onClick={toggleStatus}
+                  className={`flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest transition-all shadow-xl ${
+                    exam.status === 'PUBLISHED' 
+                      ? theme === 'dark' ? 'bg-amber-500 text-white shadow-amber-500/20' : 'bg-amber-500 text-white shadow-amber-200'
+                      : theme === 'dark' ? 'bg-indigo-600 text-white shadow-indigo-500/20 hover:bg-indigo-700' : 'bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700'
+                  }`}
+                >
+                  {exam.status === 'PUBLISHED' ? <AlertCircle size={18} /> : <Globe size={18} />}
+                  {exam.status === 'PUBLISHED' ? 'Unpublish' : 'Publish Exam'}
+                </button>
+              </>
+            )}
           </div>
         </header>
 
@@ -268,12 +273,14 @@ const ExamDetailsContent = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between px-2">
             <h3 className={`text-xl font-black tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>Question Pool</h3>
-            <button 
-              onClick={() => navigate('/teacher/builder', { state: { examId } })}
-              className="flex items-center gap-2 text-indigo-600 font-bold text-sm hover:underline"
-            >
-              <Plus size={18} /> <span className="hidden sm:inline">Add Question</span>
-            </button>
+            {!isAdminView && (
+              <button 
+                onClick={() => navigate('/teacher/builder', { state: { examId } })}
+                className="flex items-center gap-2 text-indigo-600 font-bold text-sm hover:underline"
+              >
+                <Plus size={18} /> <span className="hidden sm:inline">Add Question</span>
+              </button>
+            )}
           </div>
 
           <div className={`rounded-[2rem] md:rounded-[3rem] border shadow-sm overflow-x-auto ${
@@ -302,10 +309,12 @@ const ExamDetailsContent = () => {
                       </span>
                     </td>
                     <td className={`p-6 text-center font-black ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{q.marks}</td>
-                    <td className="p-6 text-right space-x-2">
-                      <button onClick={() => navigate(`/teacher/builder/${q.question_id}`, {state: {examId}})}className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Edit3 size={18} /></button>
-                      <button onClick={() => deleteQuestion(q.question_id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18} /></button>
-                    </td>
+                    {!isAdminView && (
+                      <td className="p-6 text-right space-x-2">
+                        <button onClick={() => navigate(`/teacher/builder/${q.question_id}`, {state: {examId}})}className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Edit3 size={18} /></button>
+                        <button onClick={() => deleteQuestion(q.question_id)} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"><Trash2 size={18} /></button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -323,39 +332,41 @@ const ExamDetailsContent = () => {
         </div>
 
         {/* Global Action Bar */}
-        <div className="flex flex-col sm:flex-row gap-4 pt-6">
-           <button 
-             onClick={() => navigate(`/teacher/submissions/${examId}`)}
-             className={`flex-1 py-5 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] hover:from-indigo-600 hover:to-indigo-700 transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95 ${
-               theme === 'dark' ? 'shadow-indigo-500/20' : 'shadow-indigo-200'
-             }`}
-           >
-              <Eye size={18} /> View Submissions
-           </button>
-           <button 
-             onClick={handlePublishResults}
-             disabled={isPublishingResults}
-             className={`flex-1 py-5 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-95 ${
-               exam.results_published 
-                 ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
-                 : theme === 'dark' ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'
-             }`}
-           >
-              <CheckCircle size={18} /> {isPublishingResults ? 'Processing...' : exam.results_published ? 'Unpublish Results' : 'Publish Results'}
-           </button>
-           <button 
-             onClick={() => setShowShareModal(true)}
-             className={`flex-1 py-5 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-95 ${
-               theme === 'dark' ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-             }`}
-           >
-              <Share2 size={18} /> Share with Students
-           </button>
-        </div>
+        {!isAdminView && (
+          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+             <button 
+               onClick={() => navigate(`/teacher/submissions/${examId}`)}
+               className={`flex-1 py-5 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] hover:from-indigo-600 hover:to-indigo-700 transition-all flex items-center justify-center gap-3 shadow-lg active:scale-95 ${
+                 theme === 'dark' ? 'shadow-indigo-500/20' : 'shadow-indigo-200'
+               }`}
+             >
+                <Eye size={18} /> View Submissions
+             </button>
+             <button 
+               onClick={handlePublishResults}
+               disabled={isPublishingResults}
+               className={`flex-1 py-5 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-95 ${
+                 exam.results_published 
+                   ? 'bg-amber-100 text-amber-600 hover:bg-amber-200'
+                   : theme === 'dark' ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'
+               }`}
+             >
+                <CheckCircle size={18} /> {isPublishingResults ? 'Processing...' : exam.results_published ? 'Unpublish Results' : 'Publish Results'}
+             </button>
+             <button 
+               onClick={() => setShowShareModal(true)}
+               className={`flex-1 py-5 rounded-[2rem] font-black text-[10px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-95 ${
+                 theme === 'dark' ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+               }`}
+             >
+                <Share2 size={18} /> Share with Students
+             </button>
+          </div>
+        )}
       </main>
 
       {/* Edit Modal */}
-      {showEditModal && (
+      {!isAdminView && showEditModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
           <div className={`rounded-[3rem] p-10 w-full max-w-md shadow-2xl ${
             theme === 'dark' ? 'bg-[#161b2b]' : 'bg-white'
@@ -416,7 +427,7 @@ const ExamDetailsContent = () => {
       )}
 
       {/* Share Modal */}
-      {showShareModal && (
+      {!isAdminView && showShareModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-md">
           <div className={`rounded-[3rem] p-10 w-full max-w-md shadow-2xl ${
             theme === 'dark' ? 'bg-[#161b2b]' : 'bg-white'
