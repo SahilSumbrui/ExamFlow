@@ -74,7 +74,7 @@ const AdminExamSubmissions = () => {
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Student</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Status</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Score</th>
-                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Duration</th>
+                    <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Time Taken</th>
                     <th className="p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">Action</th>
                   </tr>
                 </thead>
@@ -95,8 +95,20 @@ const AdminExamSubmissions = () => {
                           {sub.score !== null ? `${sub.score}/${exam?.total_marks || 100}` : 'Pending'}
                         </p>
                       </td>
-                      <td className="p-6 text-slate-500 font-medium flex items-center gap-2">
-                        <Clock size={14} /> {sub.duration || 'N/A'}
+                      <td className="p-6 text-slate-500 font-medium">
+                        {sub.start_time && sub.end_time ? (
+                          <div className="flex items-center gap-2">
+                            <Clock size={14} />
+                            {(() => {
+                              const start = new Date(sub.start_time);
+                              const end = new Date(sub.end_time);
+                              const minutes = Math.floor((end - start) / 60000);
+                              const hours = Math.floor(minutes / 60);
+                              const mins = minutes % 60;
+                              return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+                            })()}
+                          </div>
+                        ) : 'N/A'}
                       </td>
                       <td className="p-6 text-right">
                         <button 
