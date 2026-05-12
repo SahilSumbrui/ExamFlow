@@ -88,7 +88,7 @@ router.put(
 router.get(
   "/:exam_id",
   verifyToken,
-  allowRoles("TEACHER"),
+  allowRoles("TEACHER", "ADMIN"),
   getExamById
 );
 

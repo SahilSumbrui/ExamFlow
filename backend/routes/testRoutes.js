@@ -137,7 +137,7 @@ router.post(
 router.get(
   "/exams/:exam_id/submissions",
   verifyToken,
-  allowRoles("TEACHER"),
+  allowRoles("TEACHER", "ADMIN"),
   verifyExamOwner,
   getExamSubmissions
 );
@@ -176,7 +176,7 @@ router.post(
 router.get(
   "/attempts/:attempt_id/violations",
   verifyToken,
-  allowRoles("TEACHER"),
+  allowRoles("TEACHER", "ADMIN"),
   verifyExamOwner,
   getViolationsForAttempt
 );
