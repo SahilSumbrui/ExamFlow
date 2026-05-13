@@ -108,7 +108,9 @@ const StudentDashContent = () => {
       }
     } catch (err) {
       console.error(err);
-      alert('Error joining exam');
+      alert(
+        err.response?.data?.message || 'Error joining exam'
+      );
     } finally {
       setIsLoading(false);
     }
