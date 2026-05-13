@@ -48,35 +48,45 @@ exports.createCourse = (req, res) => {
 // Delete course
 exports.deleteCourse = (req, res) => {
   const { course_id } = req.params;
-  const teacher_id = req.user.user_id;
+  const teacher_id = req.user.user_id; // Auth middleware se extracted
 
-  // Check if course has exams
+  // Step 1: Pehle check karo ki ye course isi teacher ka hai ya nahi (Authorization)
   db.query(
-    "SELECT COUNT(*) as count FROM exams WHERE course_id = ?",
-    [course_id],
-    (err, result) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Failed to check course" });
-      }
+    "SELECT * FROM courses WHERE course_id = ? AND teacher_id = ?",
+    [course_id, teacher_id],
+    (err, courseResult) => {
+      if (err) return res.status(500).json({ message: "Database error" });
       
-      if (result[0].count > 0) {
-        return res.status(400).json({ message: "Cannot delete course with existing exams. Delete exams first." });
+      if (courseResult.length === 0) {
+        return res.status(404).json({ message: "Course not found or unauthorized" });
       }
 
-      // No exams, safe to delete
+      // Step 2: Pehle is course se linked saare EXAMS delete karo 
+      // (Referential Integrity maintain karne ke liye)
       db.query(
-        "DELETE FROM courses WHERE course_id = ? AND teacher_id = ?",
-        [course_id, teacher_id],
-        (err, result) => {
+        "DELETE FROM exams WHERE course_id = ?",
+        [course_id],
+        (err) => {
           if (err) {
             console.error(err);
-            return res.status(500).json({ message: "Failed to delete course" });
+            return res.status(500).json({ message: "Failed to delete associated exams" });
           }
-          if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "Course not found or unauthorized" });
-          }
-          res.json({ message: "Course deleted successfully" });
+
+          // Step 3: Ab jab Exams delete ho gaye, finally COURSE delete karo
+          db.query(
+            "DELETE FROM courses WHERE course_id = ?",
+            [course_id],
+            (err) => {
+              if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Failed to delete course" });
+              }
+
+              res.json({ 
+                message: "Course and all associated exams have been deleted successfully." 
+              });
+            }
+          );
         }
       );
     }
